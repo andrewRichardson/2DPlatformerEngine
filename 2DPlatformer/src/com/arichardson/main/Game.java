@@ -1,25 +1,27 @@
 package com.arichardson.main;
 
-import java.awt.AlphaComposite;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Polygon;
 import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferStrategy;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 
 import javax.swing.JFrame;
 
+import com.arichardson.main.entities.Player;
+import com.arichardson.main.graphics.Drawing;
+import com.arichardson.main.graphics.Lighting;
+import com.arichardson.main.graphics.ui.UIComponent;
+import com.arichardson.main.graphics.ui.UIController;
+import com.arichardson.main.graphics.ui.UIMenu;
+import com.arichardson.main.graphics.ui.UIPanel;
 import com.arichardson.main.input.InputHandler;
 
-public class Game extends Canvas implements Runnable, MouseMotionListener, MouseListener {
+public class Game extends Canvas implements Runnable, MouseMotionListener {
 
 	private static final long serialVersionUID = 1L;
 
@@ -34,47 +36,22 @@ public class Game extends Canvas implements Runnable, MouseMotionListener, Mouse
 
 	private int ups = 0;
 	private int fps = 0;
-
-	private InputHandler input;
-
-	private Polygon playerRect;
-	private int px = 0;
-	private int py = 0;
-	private int velX = 0;
-	private int velY = 0;
-	private int speedX = 1;
-	private int speedY = 2;
+	
 	private int tileSize = 8;
-	private int gravity = 1;
-	
-	private BufferedImage gradient;
-	private int[] gradientArray;
-	
-	private int lightX = width/2;
-	private int lightY = height/2;
-	private int lightBallSize = 2;
-	private int lightFalloff = 75;
-	private int lightPasses = 200;
-	private int lightStep = 2;
-	private int lightStartA = 0;
-	private int lightA = 360;
-	
-	private int lightRed = 255;
-	private int lightBlue = 255;
-	private int lightGreen = 255;
 	
 	private int mouseX;
 	private int mouseY;
-	private boolean mouseIsHovering = false;
-	private int tileHovered = 0;
-	private double blockDistance = 0;
-	private double maxDistance = 70;
 
 	private boolean paused = false;
 
-	private static String title = "2D Platformer with Dynamic Lighting";
+	private static String title = "2D Platformer Engine";
 
+	private InputHandler input;
 	private Level level;
+	private Drawing drawer;
+	private Player player;
+	private Lighting lighting;
+	private UIController uiControl;
 
 	public Game() {
 		Dimension size = new Dimension(width, height);
@@ -84,30 +61,28 @@ public class Game extends Canvas implements Runnable, MouseMotionListener, Mouse
 		input = new InputHandler();
 
 		addKeyListener(input);
+		addMouseListener(input);
+		addMouseWheelListener(input);
 		addMouseMotionListener(this);
-		addMouseListener(this);
 
 		level = new Level(width, height, tileSize, Color.GRAY);
-
-		px = width / 2 - tileSize / 2;
-		py = height / 2 - tileSize / 2;
+		drawer = new Drawing(level, input);
+		player = new Player(level, input, 1, width, height);
+		lighting = new Lighting(level, player, width, height);
+		uiControl = new UIController(width, height, input);
+		UIComponent[] components = {new UIPanel(0, 0, 0, 0, false, Color.LIGHT_GRAY, 0.8f), 
+				new UIPanel(0, 0, 0, 0, false, Color.LIGHT_GRAY, 0.8f), 
+				new UIPanel(0, 0, 0, 0, false, Color.LIGHT_GRAY, 0.8f), 
+				new UIPanel(0, 0, 0, 0, false, Color.LIGHT_GRAY, 0.8f)};
 		
-		int[] xPoints = {px, px, px+tileSize, px+tileSize*2, px+tileSize*2};
-		int[] yPoints = {py, py+tileSize*4-tileSize, py+tileSize*4, py+tileSize*4-tileSize, py};
+		UIMenu menu = new UIMenu(0, 0, UIMenu.VERT_LAYOUT, components, new int[]{0, 10, 150, 50}, true, false, Color.WHITE, false);
 		
-		playerRect = new Polygon(xPoints, yPoints, 5);
-
-		gradient = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-		gradientArray = ((DataBufferInt) gradient.getRaster().getDataBuffer()).getData();
-		
-		for(int x = 0; x < width; x++){
-			for(int y = 0; y < height; y++){
-				Color c = new Color((int)(((double)(height-y)/height)*255), (int)(((double)(height-y)/height)*255), (int)(((double)(height-y)/height)*255));
-				gradientArray[x + y * width] = c.getRGB();
-			}
-		}
-		
-		
+		UIComponent[] components2 = {new UIPanel(0, 0, 150, 50, false, Color.LIGHT_GRAY, 0.8f), 
+				new UIPanel(0, 0, 150, 50, false, Color.LIGHT_GRAY, 0.8f), 
+				menu, 
+				new UIPanel(0, 0, 150, 50, false, Color.LIGHT_GRAY, 0.8f)};
+		UIMenu menu2 = new UIMenu(10, 10, UIMenu.HORZ_LAYOUT, components2, new int[]{10, 10, 0, 0}, false, false, Color.WHITE, true);
+		uiControl.addMenu(menu2);
 	}
 
 	public static void main(String[] args) {
@@ -176,82 +151,14 @@ public class Game extends Canvas implements Runnable, MouseMotionListener, Mouse
 		input.update();
 
 		if (!paused) {
-			int oldx = px;
-			int oldy = py;
-
-			if(Math.abs(velY) < 5){
-				if (input.up) {
-					velY -= speedY;
-				}
-			}
-			/*
-			if (input.down) {
-				velY += playerSpeed;
-			}*/
+			player.update();
 			
-			if(Math.abs(velX) < 4){
-				if (input.left) {
-					velX -= speedX;
-				}
-				if (input.right) {
-					velX += speedX;
-				}	
-			}
-			else{
-				velX += (velX < 0) ? 1 : -1;
-			}
+			drawer.update();
+			drawer.mouseX = mouseX;
+			drawer.mouseY = mouseY;
 			
-			px += velX;
-			py += velY;
-			
-			if(velY < 10)
-				velY += gravity;
-
-			playerRect.translate(-playerRect.getBounds().x, -playerRect.getBounds().y);
-			playerRect.translate(px, py);
-
-			if (px > width - tileSize || px < 0)
-				px = oldx;
-
-			if (py > height - tileSize || py < 0)
-				py = oldy;
-
-			for (int i = 0; i < level.ret.length; i++) {
-				if (playerRect.intersects(level.ret[i])) {
-					px = oldx;
-					i = level.ret.length;
-					if(velX != 0)
-						velX -= speedX/2 * (velX/Math.abs(velX));
-				}
-			}
-			
-			playerRect.translate(-playerRect.getBounds().x, -playerRect.getBounds().y);
-			playerRect.translate(px, py);
-			
-			for (int i = 0; i < level.ret.length; i++) {
-				if (playerRect.intersects(level.ret[i])) {
-					py = oldy;
-					velY = 0;
-					i = level.ret.length;
-				}
-			}
-			
-			playerRect.translate(-playerRect.getBounds().x, -playerRect.getBounds().y);
-			playerRect.translate(px, py);
-			
-			checkMouseHover();
+			drawer.blockDistance = Math.sqrt(((mouseX)-(player.px+player.playerRect.getBounds().width/2))*((mouseX)-(player.px+player.playerRect.getBounds().width/2)) + ((mouseY)-(player.py+player.playerRect.getBounds().height/2))*((mouseY)-(player.py+player.playerRect.getBounds().height/2)));
 		}
-	}
-
-	@SuppressWarnings("unused")
-	private void resetPlayer() {
-		px = width / 2 - tileSize / 2;
-		py = height / 2 - tileSize / 2;
-
-		int[] xPoints = {px, px, px+tileSize, px+tileSize*2, px+tileSize*2};
-		int[] yPoints = {py, py+tileSize*4-tileSize, py+tileSize*4, py+tileSize*4-tileSize, py};
-		playerRect.xpoints = xPoints;
-		playerRect.ypoints = yPoints;
 	}
 
 	private void render() {
@@ -272,20 +179,12 @@ public class Game extends Canvas implements Runnable, MouseMotionListener, Mouse
 
 		//renderLight(g);
 		
-		level.drawTileMap(g);
-		
-		blockDistance = Math.sqrt(((mouseX)-(px+playerRect.getBounds().width/2))*((mouseX)-(px+playerRect.getBounds().width/2)) + ((mouseY)-(py+playerRect.getBounds().height/2))*((mouseY)-(py+playerRect.getBounds().height/2)));
-		
-		if(mouseIsHovering){
-			if(blockDistance <= maxDistance)
-				g.setColor(Color.WHITE);
-			else
-				g.setColor(Color.RED);
-			g.drawRect(level.ret[tileHovered].x-1, level.ret[tileHovered].y-1, level.ret[tileHovered].width+2, level.ret[tileHovered].height+2);
-		}
-		
 		g.setColor(Color.WHITE);
-		g.fill(playerRect);
+		g.fill(player.playerRect);
+		
+		drawer.render(g);
+		
+		uiControl.render(g);
 
 		int fontSize = width / 18;
 
@@ -299,110 +198,16 @@ public class Game extends Canvas implements Runnable, MouseMotionListener, Mouse
 		bs.show();
 	}
 	
-	public void checkMouseHover(){
-		for(int i = 0; i < level.ret.length; i++){
-			if(level.ret[i].contains(mouseX, mouseY)){
-				mouseIsHovering = true;
-				tileHovered = i;
-				i = level.ret.length;
-			}
-			else
-				mouseIsHovering = false;
-		}
-	}
-	
-	public void tryBreakBlock(){
-		int x = level.ret[tileHovered].x/level.ret[tileHovered].width;
-		int y = level.ret[tileHovered].y/level.ret[tileHovered].height;
-		if(mouseIsHovering && blockDistance <= maxDistance){
-			level.tiles.floors[x][y] = 0;
-			level.getColliders();
-			level.fillColliders();
-			System.out.println("Breaking block");
-		}
-	}
-	
-	public void tryPlaceBlock(){
-		int x = level.ret[tileHovered].x/level.ret[tileHovered].width;
-		int y = level.ret[tileHovered].y/level.ret[tileHovered].height;
-		if(blockDistance <= maxDistance){
-			level.tiles.floors[x][y] = 1;
-			level.getColliders();
-			level.fillColliders();
-			System.out.println("Placing block");
-		}
-	}
-
-	public void lightScene(Graphics2D g) {
-		for(int l = 0; l < lightPasses; l++){
-			for(int r = 1; r < lightFalloff+1; r++){
-				int x = (int)(lightX+lightStep*(r*Math.cos(Math.toRadians(((double)l/lightPasses)*lightA + lightStartA))));
-				int y = (int)(lightY+lightStep*(r*Math.sin(Math.toRadians(((double)l/lightPasses)*lightA + lightStartA))));
-				
-				boolean collide = false;
-				
-				if(level.coords[x][y] || playerRect.intersects(x-lightBallSize/2, y-lightBallSize/2, lightBallSize, lightBallSize)){
-					r = lightFalloff+1;
-					collide = true;
-				}
-				
-				if(!collide){
-					g.setColor(new Color(lightRed-(int)(((double)r/lightFalloff)*lightRed),lightBlue-(int)(((double)r/lightFalloff)*lightBlue),lightGreen-(int)(((double)r/lightFalloff)*lightGreen)));
-					g.fillOval(x, y, lightBallSize+(r/(lightFalloff/5)), lightBallSize+(r/(lightFalloff/5)));
-				}
-			}
-		}
-	}
-	
-	public void renderLight(Graphics2D g, int xx, int yy, int size, float alpha) {
-		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_IN, alpha));
-		for(int l = 0; l < lightPasses; l++){
-			for(int r = 1; r < size+1; r++){
-				int x = (int)(xx+lightStep*(r*Math.cos(Math.toRadians(((double)l/lightPasses)*360))));
-				int y = (int)(yy+lightStep*(r*Math.sin(Math.toRadians(((double)l/lightPasses)*360))));
-				
-				g.setColor(new Color(lightRed-(int)(((double)r/size)*lightRed),lightBlue-(int)(((double)r/size)*lightBlue),lightGreen-(int)(((double)r/size)*lightGreen)));
-				g.fillOval(x, y, size, size);
-			}
-		}
-		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC, 1f));
-	}
-	
 	public void mouseDragged(MouseEvent e){
-		lightX = e.getX();
-		lightY = e.getY();
+		lighting.lightX = e.getX();
+		lighting.lightY = e.getY();
+		mouseX = e.getX();
+		mouseY = e.getY();
 	}
 
 	public void mouseMoved(MouseEvent e) {
 		mouseX = e.getX();
 		mouseY = e.getY();
-	}
-
-	@Override
-	public void mouseClicked(MouseEvent e) {
-	}
-
-	@Override
-	public void mouseEntered(MouseEvent e) {
-		
-	}
-
-	@Override
-	public void mouseExited(MouseEvent e) {
-		
-	}
-
-	@Override
-	public void mousePressed(MouseEvent e) {
-		if(e.getButton() == MouseEvent.BUTTON1)
-			tryBreakBlock();
-		if(e.getButton() == MouseEvent.BUTTON3)
-			tryPlaceBlock();
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent e) {
-		
 	}
 
 }

@@ -1,10 +1,9 @@
-package com.arichardson.main.graphics;
+package com.arichardson.main.math;
 
 import java.util.Random;
 
 public class GenerateWalls {
-	private int width;
-	private int height;
+	private int width, height;
 
 	private int randomFillPercent = 47;
 
