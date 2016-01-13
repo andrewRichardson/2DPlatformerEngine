@@ -10,7 +10,7 @@ import com.arichardson.main.graphics.TileMap;
 public class Level {
 
 	public TileMap tileMap;
-	private int width, height;
+	public int width, height;
 	public int size;
 	private Color color;
 	public Rectangle[] colliders;

@@ -34,6 +34,7 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 
 	private JFrame frame;
 
+	@SuppressWarnings("unused")
 	private int ups = 0;
 	private int fps = 0;
 	
@@ -72,6 +73,8 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 
 		drawer = new Drawing(width, height, tileSize, Color.GRAY, input);
 		player = new Player(drawer.level, input, 1, width, height);
+		drawer.playerwidth = player.playerRect.getBounds().width;
+		drawer.playerheight = player.playerRect.getBounds().height;
 		lighting = new Lighting(drawer.level, player, width, height);
 		uiControl = new UIController(width, height, input);
 		brushMenuComponents = new UIComponent[]{new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "DESTROY"), 
@@ -143,7 +146,7 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 			if (System.currentTimeMillis() - timer > 1000) {
 				timer += 1000;
 				frame.setTitle(title + " | " + fps + " fps");
-				System.out.println(ups + " ups, " + fps + " fps");
+				//System.out.println(ups + " ups, " + fps + " fps");
 				fps = 0;
 				ups = 0;
 			}
@@ -163,7 +166,8 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 			uiControl.mouseX = mouseX;
 			uiControl.mouseY = mouseY;
 			uiControl.eventHandler();
-			drawer.blockDistance = Math.sqrt(((mouseX)-(player.px+player.playerRect.getBounds().width/2))*((mouseX)-(player.px+player.playerRect.getBounds().width/2)) + ((mouseY)-(player.py+player.playerRect.getBounds().height/2))*((mouseY)-(player.py+player.playerRect.getBounds().height/2)));
+			drawer.playerX = player.px;
+			drawer.playerY = player.py;
 			
 			
 		}
