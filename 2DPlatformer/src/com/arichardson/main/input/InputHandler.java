@@ -9,9 +9,9 @@ import java.awt.event.MouseWheelListener;
 
 public class InputHandler implements KeyListener, MouseListener, MouseWheelListener{
 
-	private boolean[] keys = new boolean[193];
+	private boolean[] keys = new boolean[256];
 	private boolean[] mouse = new boolean[508];
-	public boolean up, down, left, right, shift, ctrl, space, mouseLeft, mouseRight, mouseScrollUp, mouseScrollDown, tilde;
+	public boolean up, down, left, right, shift, ctrl, space, mouseLeft, mouseRight, mouseScrollUp, mouseScrollDown, shiftTab;
 
 	public void update() {
 		up = keys[KeyEvent.VK_UP] || keys[KeyEvent.VK_W] || keys[KeyEvent.VK_SPACE];
@@ -19,15 +19,12 @@ public class InputHandler implements KeyListener, MouseListener, MouseWheelListe
 		left = keys[KeyEvent.VK_LEFT] || keys[KeyEvent.VK_A];
 		right = keys[KeyEvent.VK_RIGHT] || keys[KeyEvent.VK_D];
 		shift = keys[KeyEvent.VK_SHIFT];
-		ctrl = keys[KeyEvent.VK_CONTROL];
 		space = keys[KeyEvent.VK_SPACE];
 		mouseLeft = mouse[MouseEvent.BUTTON1];
 		mouseRight = mouse[MouseEvent.BUTTON3];
 	}
 
 	public void keyTyped(KeyEvent e) {
-		if (e.getKeyCode() == 0)
-			tilde ^= true;
 	}
 
 	public void keyPressed(KeyEvent e) {
@@ -35,6 +32,10 @@ public class InputHandler implements KeyListener, MouseListener, MouseWheelListe
 	}
 
 	public void keyReleased(KeyEvent e) {
+		if (keys[KeyEvent.VK_CONTROL])
+			ctrl ^= true;
+		if(keys[KeyEvent.VK_SHIFT] && keys[KeyEvent.VK_ALT])
+			shiftTab ^= true;
 		keys[e.getKeyCode()] = false;
 	}
 

@@ -17,8 +17,8 @@ import com.arichardson.main.graphics.Drawing;
 import com.arichardson.main.graphics.Lighting;
 import com.arichardson.main.graphics.ui.UIComponent;
 import com.arichardson.main.graphics.ui.UIController;
+import com.arichardson.main.graphics.ui.UILabel;
 import com.arichardson.main.graphics.ui.UIMenu;
-import com.arichardson.main.graphics.ui.UIPanel;
 import com.arichardson.main.input.InputHandler;
 
 public class Game extends Canvas implements Runnable, MouseMotionListener {
@@ -47,11 +47,16 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 	private static String title = "2D Platformer Engine";
 
 	private InputHandler input;
-	private Level level;
 	private Drawing drawer;
 	private Player player;
 	private Lighting lighting;
 	private UIController uiControl;
+	
+	UIComponent[] brushMenuComponents;
+	UIComponent brushButton;
+	UIMenu brushMenu;
+	UIComponent[] mainMenuComponents;
+	UIMenu mainMenu;
 
 	public Game() {
 		Dimension size = new Dimension(width, height);
@@ -65,24 +70,23 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 		addMouseWheelListener(input);
 		addMouseMotionListener(this);
 
-		level = new Level(width, height, tileSize, Color.GRAY);
-		drawer = new Drawing(level, input);
-		player = new Player(level, input, 1, width, height);
-		lighting = new Lighting(level, player, width, height);
+		drawer = new Drawing(width, height, tileSize, Color.GRAY, input);
+		player = new Player(drawer.level, input, 1, width, height);
+		lighting = new Lighting(drawer.level, player, width, height);
 		uiControl = new UIController(width, height, input);
-		UIComponent[] components = {new UIPanel(0, 0, 0, 0, false, Color.LIGHT_GRAY, 0.8f), 
-				new UIPanel(0, 0, 0, 0, false, Color.LIGHT_GRAY, 0.8f), 
-				new UIPanel(0, 0, 0, 0, false, Color.LIGHT_GRAY, 0.8f), 
-				new UIPanel(0, 0, 0, 0, false, Color.LIGHT_GRAY, 0.8f)};
+		brushMenuComponents = new UIComponent[]{new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "DESTROY"), 
+				new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "PLACE"), 
+				new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "CLOSE MENU")};
+		brushButton = new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "BRUSH TYPE");
 		
-		UIMenu menu = new UIMenu(0, 0, UIMenu.VERT_LAYOUT, components, new int[]{0, 10, 150, 50}, true, false, Color.WHITE, false);
+		brushMenu = new UIMenu(0, 0, UIMenu.VERT_LAYOUT, brushMenuComponents, new int[]{5, 5, 150, 50}, true, true, Color.BLACK, false);
 		
-		UIComponent[] components2 = {new UIPanel(0, 0, 150, 50, false, Color.LIGHT_GRAY, 0.8f), 
-				new UIPanel(0, 0, 150, 50, false, Color.LIGHT_GRAY, 0.8f), 
-				menu, 
-				new UIPanel(0, 0, 150, 50, false, Color.LIGHT_GRAY, 0.8f)};
-		UIMenu menu2 = new UIMenu(10, 10, UIMenu.HORZ_LAYOUT, components2, new int[]{10, 10, 0, 0}, false, false, Color.WHITE, true);
-		uiControl.addMenu(menu2);
+		mainMenuComponents = new UIComponent[]{new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "SAVE MAP"), 
+				new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "BRUSH SHAPE"), 
+				brushButton, 
+				new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "CLOSE")};
+		mainMenu = new UIMenu(10, 10, UIMenu.HORZ_LAYOUT, mainMenuComponents, new int[]{5, 5, 600, 60}, false, true, Color.BLACK, true);
+		uiControl.addMenu(mainMenu);
 	}
 
 	public static void main(String[] args) {
@@ -152,13 +156,45 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 
 		if (!paused) {
 			player.update();
-			
+			handleUI();
 			drawer.update();
 			drawer.mouseX = mouseX;
 			drawer.mouseY = mouseY;
-			
+			uiControl.mouseX = mouseX;
+			uiControl.mouseY = mouseY;
+			uiControl.eventHandler();
 			drawer.blockDistance = Math.sqrt(((mouseX)-(player.px+player.playerRect.getBounds().width/2))*((mouseX)-(player.px+player.playerRect.getBounds().width/2)) + ((mouseY)-(player.py+player.playerRect.getBounds().height/2))*((mouseY)-(player.py+player.playerRect.getBounds().height/2)));
+			
+			
 		}
+	}
+	
+	private void handleUI(){
+		boolean flag = false;
+		if(brushMenuComponents[0].clicked){
+			drawer.changeBrushType(false);
+		}
+		if(brushMenuComponents[1].clicked){
+			drawer.changeBrushType(true);
+		}
+		if(brushMenuComponents[2].clicked && mainMenuComponents[2].equals(brushMenu)){
+			mainMenuComponents[2] = brushButton;
+			mainMenu.autoPlaceComponents();
+			flag = true;
+		}
+		if(mainMenuComponents[2].clicked && mainMenuComponents[2].equals(brushButton) && !flag){
+			mainMenuComponents[2] = brushMenu;
+			mainMenu.autoPlaceComponents();
+		}
+		if(mainMenuComponents[3].clicked)
+			input.shiftTab = false;
+		if(mainMenuComponents[1].clicked)
+			input.ctrl ^= true;
+		
+		for(UIComponent comp : brushMenuComponents)
+			comp.clicked = false;
+		for(UIComponent comp : mainMenuComponents)
+			comp.clicked = false;
 	}
 
 	private void render() {
@@ -186,9 +222,9 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 		
 		uiControl.render(g);
 
-		int fontSize = width / 18;
+		int fontSize = width / 16;
 
-		g.setFont(new Font("Quartz MS", Font.BOLD, fontSize));
+		g.setFont(new Font("HELVETICA", Font.BOLD, fontSize));
 		g.setColor(Color.WHITE);
 
 		if (paused) {

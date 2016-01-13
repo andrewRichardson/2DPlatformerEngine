@@ -8,7 +8,7 @@ import com.arichardson.main.input.InputHandler;
 
 public class Drawing {
 	
-	private Level level;
+	public Level level;
 	private InputHandler input;
 	public int mouseX, mouseY;
 	public boolean mouseIsHovering = false;
@@ -19,10 +19,12 @@ public class Drawing {
 	private int brushRadius = 1;
 	private double scrollNumber = 2;
 	private double scrollUnits = 2;
-	private boolean brushShape = false;
+	public boolean brushShape = false;
 	
-	public Drawing(Level level, InputHandler inputHandler){
-		this.level = level;
+	private boolean breakOrPlace = false;
+	
+	public Drawing(int width, int height, int tileSize, Color color, InputHandler inputHandler){
+		level = new Level(width, height, tileSize, color);
 		this.input = inputHandler;
 	}
 	
@@ -45,16 +47,22 @@ public class Drawing {
 		boolean previousValue = brushShape;
 		brushShape = input.ctrl;
 		if(previousValue != brushShape)
-			System.out.println("Brush shape square is set to " + brushShape);
+			System.out.println("Brush shape is set to " + ((brushShape)?"square":"circle")+".");
 		
 		if(input.mouseLeft){
-			tryBreakBlock();
-		}
-		if(input.mouseRight){
-			tryPlaceBlock();
+			if(!breakOrPlace){
+				tryBreakBlock();
+			}
+			if(breakOrPlace){
+				tryPlaceBlock();
+			}
 		}
 		
 		checkMouseHover();
+	}
+	
+	public void changeBrushType(boolean i){
+		breakOrPlace = i;
 	}
 	
 	public void render(Graphics2D g){
