@@ -39,7 +39,7 @@ public class UIController {
 			if(uiComp.getClass() == UIMenu.class){
 				testMenus((UIMenu)uiComp);
 			}else{
-				if(mouseX > uiComp.x && mouseX < uiComp.x+uiComp.width && mouseY > uiComp.y && mouseY < uiComp.y+uiComp.height && input.mouseLeft){
+				if(mouseX > uiComp.x && mouseX < uiComp.x+uiComp.width && mouseY > uiComp.y && mouseY < uiComp.y+uiComp.height && input.mouseLeft && input.shiftTab){
 					uiComp.clicked = true;
 				}
 			}

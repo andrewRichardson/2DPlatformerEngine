@@ -12,7 +12,7 @@ public class Level {
 	public TileMap tileMap;
 	public int width, height;
 	public int size;
-	private Color color;
+	public Color color;
 	public Rectangle[] colliders;
 	public boolean[][] coords;
 

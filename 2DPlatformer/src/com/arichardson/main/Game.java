@@ -9,6 +9,13 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferStrategy;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import javax.swing.JFrame;
 
@@ -85,6 +92,7 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 		brushMenu = new UIMenu(0, 0, UIMenu.VERT_LAYOUT, brushMenuComponents, new int[]{5, 5, 150, 50}, true, true, Color.BLACK, false);
 		
 		mainMenuComponents = new UIComponent[]{new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "SAVE MAP"), 
+				new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "OPEN"), 
 				new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "BRUSH SHAPE"), 
 				brushButton, 
 				new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "CLOSE")};
@@ -158,7 +166,8 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 		input.update();
 
 		if (!paused) {
-			player.update();
+			if(!input.shiftTab)
+				player.update();
 			handleUI();
 			drawer.update();
 			drawer.mouseX = mouseX;
@@ -168,8 +177,6 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 			uiControl.eventHandler();
 			drawer.playerX = player.px;
 			drawer.playerY = player.py;
-			
-			
 		}
 	}
 	
@@ -181,24 +188,115 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 		if(brushMenuComponents[1].clicked){
 			drawer.changeBrushType(true);
 		}
-		if(brushMenuComponents[2].clicked && mainMenuComponents[2].equals(brushMenu)){
-			mainMenuComponents[2] = brushButton;
+		if(brushMenuComponents[2].clicked && mainMenuComponents[3].equals(brushMenu)){
+			mainMenuComponents[3] = brushButton;
 			mainMenu.autoPlaceComponents();
 			flag = true;
 		}
-		if(mainMenuComponents[2].clicked && mainMenuComponents[2].equals(brushButton) && !flag){
-			mainMenuComponents[2] = brushMenu;
+		if(mainMenuComponents[3].clicked && mainMenuComponents[3].equals(brushButton) && !flag){
+			mainMenuComponents[3] = brushMenu;
 			mainMenu.autoPlaceComponents();
 		}
-		if(mainMenuComponents[3].clicked)
+		if(mainMenuComponents[4].clicked)
 			input.shiftTab = false;
-		if(mainMenuComponents[1].clicked)
+		if(mainMenuComponents[2].clicked)
 			input.ctrl ^= true;
+		if(mainMenuComponents[1].clicked)
+			retrieveLevel("level1");
+		if(mainMenuComponents[0].clicked)
+			saveLevel("level1", drawer.level);
 		
 		for(UIComponent comp : brushMenuComponents)
 			comp.clicked = false;
 		for(UIComponent comp : mainMenuComponents)
 			comp.clicked = false;
+	}
+	
+	private void retrieveLevel(String levelName){
+		int width = 0;
+		int height = 0;
+		int tileSize = 0;
+		int r, g, b;
+		int[][] newLevel = null;
+		Color color = null;
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(new File(levelName+".txt")));
+			
+			width = Integer.parseInt(br.readLine());
+			height = Integer.parseInt(br.readLine());
+			tileSize = Integer.parseInt(br.readLine());
+			r = Integer.parseInt(br.readLine());
+			g = Integer.parseInt(br.readLine());
+			b = Integer.parseInt(br.readLine());
+			color = new Color(r, g, b);
+			
+			newLevel = new int[width][height];
+			
+			for(int y = 0; y < height/tileSize; y++){
+				String line = br.readLine();
+				for(int x = 0; x < width/tileSize; x++){
+					newLevel[x][y] = Integer.parseInt(line.charAt(x*2)+"");
+					System.out.print(newLevel[x][y] + " ");
+				}
+				System.out.println("");
+			}
+			
+			br.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		drawer.level = new Level(width, height, tileSize, color);
+		player = new Player(drawer.level, input, 1, width, height);
+		for(int y = 0; y < height/tileSize; y++){
+			for(int x = 0; x < width/tileSize; x++){
+				drawer.level.tileMap.tiles[x][y] = newLevel[x][y];
+			}
+		}
+	}
+	
+	private void saveLevel(String levelName, Level level) {
+		paused = true;
+		try {
+            FileWriter fileWriter = new FileWriter(levelName+".txt");
+
+            BufferedWriter bw = new BufferedWriter(fileWriter);
+
+            bw.write(level.width+"");
+            bw.newLine();
+            bw.write(level.height+"");
+            bw.newLine();
+            bw.write(level.size+"");
+            bw.newLine();
+            bw.write(level.color.getRed()+"");
+            bw.newLine();
+            bw.write(level.color.getGreen()+"");
+            bw.newLine();
+            bw.write(level.color.getBlue()+"");
+            bw.newLine();
+            
+            for(int y = 0; y < height/level.size; y++){
+    			for(int x = 0; x < width/level.size; x++){
+    				bw.write(level.tileMap.tiles[x][y] + " ");
+    			}
+    			bw.newLine();
+    		}
+            
+            bw.close();
+        }
+        catch(IOException ex) {
+            System.out.println(
+                "Error writing to file '"
+                + levelName + "'");
+        }
+		paused = false;
 	}
 
 	private void render() {

@@ -65,7 +65,7 @@ public class Drawing {
 			canChangeBlock_Color = Color.ORANGE;
 		}
 		
-		if(input.mouseLeft){
+		if(input.mouseLeft && !input.shiftTab){
 			if(!breakOrPlace){
 				tryBreakBlock();
 			}

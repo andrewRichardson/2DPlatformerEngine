@@ -8,7 +8,7 @@ import com.arichardson.main.input.InputHandler;
 public class Player {
 	
 	InputHandler input;
-	Level level;
+	public Level level;
 
 	public Polygon playerRect;
 	public int px = 0;
