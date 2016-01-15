@@ -65,7 +65,7 @@ public class Drawing {
 			canChangeBlock_Color = Color.ORANGE;
 		}
 		
-		if(input.mouseLeft && !input.shiftTab){
+		if(input.mouseLeft && !input.escape){
 			if(!breakOrPlace){
 				tryBreakBlock();
 			}
@@ -119,6 +119,7 @@ public class Drawing {
 				}
 			}
 		//}
+		g.setColor(Color.WHITE);
 	}
 	
 	public void updateBlockDistance(int xOffset, int yOffset){

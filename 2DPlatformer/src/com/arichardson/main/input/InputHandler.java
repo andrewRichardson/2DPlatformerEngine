@@ -11,7 +11,7 @@ public class InputHandler implements KeyListener, MouseListener, MouseWheelListe
 
 	private boolean[] keys = new boolean[256];
 	private boolean[] mouse = new boolean[508];
-	public boolean up, down, left, right, shift, ctrl, space, mouseLeft, mouseRight, mouseScrollUp, mouseScrollDown, shiftTab;
+	public boolean up, down, left, right, shift, ctrl, space, mouseLeft, mouseRight, mouseScrollUp, mouseScrollDown, escape;
 
 	public void update() {
 		up = keys[KeyEvent.VK_UP] || keys[KeyEvent.VK_W] || keys[KeyEvent.VK_SPACE];
@@ -34,8 +34,8 @@ public class InputHandler implements KeyListener, MouseListener, MouseWheelListe
 	public void keyReleased(KeyEvent e) {
 		if (keys[KeyEvent.VK_CONTROL])
 			ctrl ^= true;
-		if(keys[KeyEvent.VK_SHIFT] && keys[KeyEvent.VK_ALT])
-			shiftTab ^= true;
+		if(keys[KeyEvent.VK_ESCAPE])
+			escape ^= true;
 		keys[e.getKeyCode()] = false;
 	}
 

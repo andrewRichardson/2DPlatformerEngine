@@ -32,8 +32,92 @@ public class Level {
 		for (int i = 0; i < tileMap.tiles.length; i++) {
 			for (int j = 0; j < tileMap.tiles[0].length; j++) {
 				if(tileMap.tiles[i][j] == 1){
+					boolean n = false;
+					boolean s = false;
+					boolean e = false;
+					boolean w = false;
 					g.setColor(color);
 					g.fillRect(i * size, j	* size, size, size);
+					
+					g.setColor(Color.LIGHT_GRAY);
+					if(i != 0){
+						if(tileMap.tiles[i-1][j] == 1)
+							w = true;
+					}
+					if(j != 0){
+						if(tileMap.tiles[i][j-1] == 1)
+							n = true;
+					}
+					if(j != tileMap.tiles[0].length-1){
+						if(tileMap.tiles[i][j+1] == 1)
+							s = true;
+					}
+					if(i != tileMap.tiles.length-1){
+						if(tileMap.tiles[i+1][j] == 1)
+							e = true;
+					}
+					if(n && !s && !e && !w){
+						g.drawLine(i*size, j*size, i*size, (j+1)*size);//west
+						g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size);//south
+						g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size);//east
+					}
+					if(!n && s && !e && !w){
+						g.drawLine(i*size, j*size, (i+1)*size, j*size);
+						g.drawLine(i*size, j*size, i*size, (j+1)*size);
+						g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size);
+					}
+					if(!n && !s && e && !w){
+						g.drawLine(i*size, j*size, (i+1)*size, j*size);
+						g.drawLine(i*size, j*size, i*size, (j+1)*size);
+						g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size);
+					}
+					if(!n && !s && !e && w){
+						g.drawLine(i*size, j*size, (i+1)*size, j*size);
+						g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size);
+						g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size);
+					}
+					if(n && s && !e && !w){
+						g.drawLine(i*size, j*size, i*size, (j+1)*size);
+						g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size);
+					}
+					if(!n && s && e && !w){
+						g.drawLine(i*size, j*size, (i+1)*size, j*size);//north
+						g.drawLine(i*size, j*size, i*size, (j+1)*size);//west
+					}
+					if(!n && !s && e && w){
+						g.drawLine(i*size, j*size, (i+1)*size, j*size);//north
+						g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size);//south
+					}
+					if(n && s && e && !w){
+						g.drawLine(i*size, j*size, i*size, (j+1)*size);//west
+					}
+					if(!n && s && e && w){
+						g.drawLine(i*size, j*size, (i+1)*size, j*size);//north
+					}
+					if(n && !s && e && w){
+						g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size);//south
+					}
+					if(n && s && !e && w){
+						g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size);//east
+					}
+					if(n && !s && e && !w){
+						g.drawLine(i*size, j*size, i*size, (j+1)*size);//west
+						g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size);//south
+					}
+					if(!n && s && !e && w){
+						g.drawLine(i*size, j*size, (i+1)*size, j*size);//north
+						g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size);//east
+					}
+					if(n && !s && !e && w){
+						g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size);//south
+						g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size);//east
+					}
+					if(!n && !s && !e && !w){
+						g.drawLine(i*size, j*size, (i+1)*size, j*size);//north
+						g.drawLine(i*size, j*size, i*size, (j+1)*size);//west
+						g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size);//south
+						g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size);//east
+					}
 				}
 			}
 		}

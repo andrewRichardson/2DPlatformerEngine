@@ -1,5 +1,6 @@
 package com.arichardson.main;
 
+import java.awt.AlphaComposite;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -166,7 +167,7 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 		input.update();
 
 		if (!paused) {
-			if(!input.shiftTab)
+			if(!input.escape)
 				player.update();
 			handleUI();
 			drawer.update();
@@ -198,7 +199,7 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 			mainMenu.autoPlaceComponents();
 		}
 		if(mainMenuComponents[4].clicked)
-			input.shiftTab = false;
+			input.escape = false;
 		if(mainMenuComponents[2].clicked)
 			input.ctrl ^= true;
 		if(mainMenuComponents[1].clicked)
@@ -220,6 +221,7 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 		int[][] newLevel = null;
 		Color color = null;
 		try {
+			//TODO: Change to use "Scanner" instead of BufferedReader
 			BufferedReader br = new BufferedReader(new FileReader(new File(levelName+".txt")));
 			
 			width = Integer.parseInt(br.readLine());
@@ -317,10 +319,11 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 
 		//renderLight(g);
 		
+		drawer.render(g);
+		
+		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
 		g.setColor(Color.WHITE);
 		g.fill(player.playerRect);
-		
-		drawer.render(g);
 		
 		uiControl.render(g);
 

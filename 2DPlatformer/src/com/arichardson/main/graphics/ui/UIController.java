@@ -22,7 +22,7 @@ public class UIController {
 	}
 	
 	public void render(Graphics2D g){
-		if(input.shiftTab){
+		if(input.escape){
 			for(UIMenu uiMenu : UIMenus){
 				renderMenu(uiMenu, g, false);
 			}
@@ -39,7 +39,7 @@ public class UIController {
 			if(uiComp.getClass() == UIMenu.class){
 				testMenus((UIMenu)uiComp);
 			}else{
-				if(mouseX > uiComp.x && mouseX < uiComp.x+uiComp.width && mouseY > uiComp.y && mouseY < uiComp.y+uiComp.height && input.mouseLeft && input.shiftTab){
+				if(mouseX > uiComp.x && mouseX < uiComp.x+uiComp.width && mouseY > uiComp.y && mouseY < uiComp.y+uiComp.height && input.mouseLeft && input.escape){
 					uiComp.clicked = true;
 				}
 			}
