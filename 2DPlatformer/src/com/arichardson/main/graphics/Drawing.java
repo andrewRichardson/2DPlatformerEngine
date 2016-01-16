@@ -15,7 +15,7 @@ public class Drawing {
 	public boolean mouseIsHovering = false;
 	public int tileHovered = 0;
 	private double blockDistance = 0;
-	public double maxDistance = 70;
+	public double maxDistance = 10000;//level.size*10;
 	public int playerX = 0;
 	public int playerY = 0;
 	public int playerwidth = 0;
@@ -26,13 +26,18 @@ public class Drawing {
 	private double scrollUnits = 2;
 	public boolean brushShape = false;
 	
-	private boolean breakOrPlace = false;
+	private int breakOrPlace = 0;
 	public Color canChangeBlock_Color;
 	
 	public Drawing(int width, int height, int tileSize, Color color, InputHandler inputHandler){
 		level = new Level(width, height, tileSize, color);
 		this.input = inputHandler;
-		
+		canChangeBlock_Color = Color.ORANGE;
+	}
+	
+	public Drawing(int width, int height, int tileSize, Color color, InputHandler inputHandler, String tileSet){
+		level = new Level(width, height, tileSize, color, tileSet);
+		this.input = inputHandler;
 		canChangeBlock_Color = Color.ORANGE;
 	}
 	
@@ -59,25 +64,35 @@ public class Drawing {
 		if(previousValue != brushShape)
 			System.out.println("Brush shape is set to " + ((brushShape)?"square":"circle")+".");
 		
-		if(breakOrPlace){
+		if(breakOrPlace == 1){
 			canChangeBlock_Color = Color.GREEN;
-		} else {
+		} else if(breakOrPlace == 0){
 			canChangeBlock_Color = Color.ORANGE;
 		}
 		
+		int x = (int)(mouseX/level.size);
+		int y = (int)(mouseY/level.size);
+		
 		if(input.mouseLeft && !input.escape){
-			if(!breakOrPlace){
+			if(breakOrPlace == 0){
 				tryBreakBlock();
 			}
-			if(breakOrPlace){
+			if(breakOrPlace == 1){
 				tryPlaceBlock();
+			}
+			if(breakOrPlace == 2){
+				System.out.println("Placing Spawn Point at "+ x + ", "+ y);
+				level.tileMap.tiles[(level.spawnPoint[0])/level.size][(level.spawnPoint[1]+level.size*2)/level.size] = 0;
+				level.tileMap.tiles[x][y] = 2;
+				level.spawnPoint[0] = x*level.size;
+				level.spawnPoint[1] = y*level.size-level.size*2;
 			}
 		}
 		
 		checkMouseHover();
 	}
 	
-	public void changeBrushType(boolean i){
+	public void changeBrushType(int i){
 		breakOrPlace = i;
 	}
 	
@@ -88,7 +103,7 @@ public class Drawing {
 			int x = (int)(mouseX/level.size);
 			int y = (int)(mouseY/level.size);
 			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
-			if(brushShape){
+			if(brushShape && breakOrPlace != 2){
 				for(int xx = -(brushRadius-1); xx < brushRadius; xx++){
 					for(int yy = -(brushRadius-1); yy < brushRadius; yy++){
 						if(x+xx < level.tileMap.tiles.length && x+xx > -1 && y+yy < level.tileMap.tiles[1].length && y+yy > -1){
@@ -102,8 +117,7 @@ public class Drawing {
 						}
 					}
 				}
-			}
-			else{
+			} else if(!brushShape && breakOrPlace != 2){
 				for(int xx = -(brushRadius-1); xx < brushRadius; xx++){
 					for(int yy = -(brushRadius-1); yy < brushRadius; yy++){
 						if(x+xx < level.tileMap.tiles.length && x+xx > -1 && y+yy < level.tileMap.tiles[1].length && y+yy > -1){
@@ -117,6 +131,9 @@ public class Drawing {
 						}
 					}
 				}
+			} else if(breakOrPlace == 2){
+				g.setColor(Color.WHITE);
+				g.fillRect(x*level.size, y*level.size, level.size, level.size);
 			}
 		//}
 		g.setColor(Color.WHITE);
@@ -178,7 +195,7 @@ public class Drawing {
 			level.getColliders();
 			level.fillColliders();
 		}
-		else{
+		else if (!brushShape){
 			for(int xx = -(brushRadius-1); xx < brushRadius; xx++){
 				for(int yy = -(brushRadius-1); yy < brushRadius; yy++){
 					if(x+xx < level.tileMap.tiles.length && x+xx > -1 && y+yy < level.tileMap.tiles[1].length && y+yy > -1){

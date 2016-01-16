@@ -19,6 +19,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 import com.arichardson.main.entities.Player;
 import com.arichardson.main.graphics.Drawing;
@@ -46,14 +47,15 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 	private int ups = 0;
 	private int fps = 0;
 	
-	private int tileSize = 8;
+	private int tileSize = 20;
 	
 	private int mouseX;
 	private int mouseY;
 
 	private boolean paused = false;
 
-	private static String title = "2D Platformer Engine";
+	private static String title = "2D Platformer Engine - Level Editor";
+	private boolean showFPS = true;
 
 	private InputHandler input;
 	private Drawing drawer;
@@ -66,6 +68,8 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 	UIMenu brushMenu;
 	UIComponent[] mainMenuComponents;
 	UIMenu mainMenu;
+	
+	private String tileSet = "res/underground-tileSet.png";
 
 	public Game() {
 		Dimension size = new Dimension(width, height);
@@ -79,14 +83,15 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 		addMouseWheelListener(input);
 		addMouseMotionListener(this);
 
-		drawer = new Drawing(width, height, tileSize, Color.GRAY, input);
+		drawer = new Drawing(width, height, tileSize, Color.GRAY, input, tileSet);
 		player = new Player(drawer.level, input, 1, width, height);
 		drawer.playerwidth = player.playerRect.getBounds().width;
 		drawer.playerheight = player.playerRect.getBounds().height;
 		lighting = new Lighting(drawer.level, player, width, height);
 		uiControl = new UIController(width, height, input);
-		brushMenuComponents = new UIComponent[]{new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "DESTROY"), 
-				new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "PLACE"), 
+		brushMenuComponents = new UIComponent[]{new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "DESTROY BLOCK"), 
+				new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "PLACE BLOCK"), 
+				new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "PLACE SPAWN"), 
 				new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "CLOSE MENU")};
 		brushButton = new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "BRUSH TYPE");
 		
@@ -96,12 +101,15 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 				new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "OPEN"), 
 				new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "BRUSH SHAPE"), 
 				brushButton, 
+				new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "RESET PLAYER"), 
 				new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "CLOSE")};
 		mainMenu = new UIMenu(10, 10, UIMenu.HORZ_LAYOUT, mainMenuComponents, new int[]{5, 5, 600, 60}, false, true, Color.BLACK, true);
 		uiControl.addMenu(mainMenu);
 	}
 
 	public static void main(String[] args) {
+		System.setProperty("sun.java2d.opengl", "true");
+		
 		Game game = new Game();
 		game.frame.setResizable(false);
 		game.frame.add(game);
@@ -154,7 +162,10 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 			
 			if (System.currentTimeMillis() - timer > 1000) {
 				timer += 1000;
-				frame.setTitle(title + " | " + fps + " fps");
+				if(showFPS)
+					frame.setTitle(title + " | " + fps + " fps");
+				else
+					frame.setTitle(title);
 				//System.out.println(ups + " ups, " + fps + " fps");
 				fps = 0;
 				ups = 0;
@@ -184,12 +195,14 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 	private void handleUI(){
 		boolean flag = false;
 		if(brushMenuComponents[0].clicked){
-			drawer.changeBrushType(false);
+			drawer.changeBrushType(0);
 		}
 		if(brushMenuComponents[1].clicked){
-			drawer.changeBrushType(true);
+			drawer.changeBrushType(1);
 		}
-		if(brushMenuComponents[2].clicked && mainMenuComponents[3].equals(brushMenu)){
+		if(brushMenuComponents[2].clicked)
+			drawer.changeBrushType(2);
+		if(brushMenuComponents[3].clicked && mainMenuComponents[3].equals(brushMenu)){
 			mainMenuComponents[3] = brushButton;
 			mainMenu.autoPlaceComponents();
 			flag = true;
@@ -199,13 +212,23 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 			mainMenu.autoPlaceComponents();
 		}
 		if(mainMenuComponents[4].clicked)
+			player.resetPlayer();
+		if(mainMenuComponents[5].clicked)
 			input.escape = false;
 		if(mainMenuComponents[2].clicked)
 			input.ctrl ^= true;
-		if(mainMenuComponents[1].clicked)
-			retrieveLevel("level1");
-		if(mainMenuComponents[0].clicked)
-			saveLevel("level1", drawer.level);
+		if(mainMenuComponents[1].clicked){
+			String file = JOptionPane.showInputDialog(frame, "Type the name of the level (w/o extension)", "Open Level", JOptionPane.QUESTION_MESSAGE);
+			if(file != null)
+				retrieveLevel(file);
+			input.mouseLeft = false;
+		}
+		if(mainMenuComponents[0].clicked){
+			String file = JOptionPane.showInputDialog(frame, "Type the name of the new level (w/o extension)", "Save Level", JOptionPane.QUESTION_MESSAGE);
+			if(file != null)
+				saveLevel(file, drawer.level);
+			input.mouseLeft = false;
+		}
 		
 		for(UIComponent comp : brushMenuComponents)
 			comp.clicked = false;
@@ -217,30 +240,35 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 		int width = 0;
 		int height = 0;
 		int tileSize = 0;
+		int spawnPoint[] = new int[2];
 		int r, g, b;
 		int[][] newLevel = null;
 		Color color = null;
 		try {
 			//TODO: Change to use "Scanner" instead of BufferedReader
-			BufferedReader br = new BufferedReader(new FileReader(new File(levelName+".txt")));
+			BufferedReader br = new BufferedReader(new FileReader(new File("res/"+levelName+".txt")));
 			
-			width = Integer.parseInt(br.readLine());
-			height = Integer.parseInt(br.readLine());
-			tileSize = Integer.parseInt(br.readLine());
-			r = Integer.parseInt(br.readLine());
-			g = Integer.parseInt(br.readLine());
-			b = Integer.parseInt(br.readLine());
-			color = new Color(r, g, b);
-			
-			newLevel = new int[width][height];
-			
-			for(int y = 0; y < height/tileSize; y++){
-				String line = br.readLine();
-				for(int x = 0; x < width/tileSize; x++){
-					newLevel[x][y] = Integer.parseInt(line.charAt(x*2)+"");
-					System.out.print(newLevel[x][y] + " ");
+			if(br != null){
+				width = Integer.parseInt(br.readLine());
+				height = Integer.parseInt(br.readLine());
+				tileSize = Integer.parseInt(br.readLine());
+				spawnPoint[0] = Integer.parseInt(br.readLine());
+				spawnPoint[1] = Integer.parseInt(br.readLine());
+				r = Integer.parseInt(br.readLine());
+				g = Integer.parseInt(br.readLine());
+				b = Integer.parseInt(br.readLine());
+				color = new Color(r, g, b);
+				
+				newLevel = new int[width][height];
+				
+				for(int y = 0; y < height/tileSize; y++){
+					String line = br.readLine();
+					for(int x = 0; x < width/tileSize; x++){
+						newLevel[x][y] = Integer.parseInt(line.charAt(x*2)+"");
+						System.out.print(newLevel[x][y] + " ");
+					}
+					System.out.println("");
 				}
-				System.out.println("");
 			}
 			
 			br.close();
@@ -255,19 +283,27 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 			e.printStackTrace();
 		}
 		
-		drawer.level = new Level(width, height, tileSize, color);
-		player = new Player(drawer.level, input, 1, width, height);
-		for(int y = 0; y < height/tileSize; y++){
-			for(int x = 0; x < width/tileSize; x++){
-				drawer.level.tileMap.tiles[x][y] = newLevel[x][y];
+		if(newLevel != null){
+			drawer.level = new Level(width, height, tileSize, color, tileSet);
+			drawer.level.spawnPoint[0] = spawnPoint[0];
+			drawer.level.spawnPoint[1] = spawnPoint[1];
+			for(int y = 0; y < height/tileSize; y++){
+				for(int x = 0; x < width/tileSize; x++){
+					drawer.level.tileMap.tiles[x][y] = newLevel[x][y];
+				}
 			}
+			drawer.level.getColliders();
+			drawer.level.fillColliders();
+			player = new Player(drawer.level, input, 1, width, height);
 		}
+		else
+			JOptionPane.showMessageDialog(frame, "Level does not exist.", "Error", JOptionPane.ERROR_MESSAGE);
 	}
 	
 	private void saveLevel(String levelName, Level level) {
 		paused = true;
 		try {
-            FileWriter fileWriter = new FileWriter(levelName+".txt");
+            FileWriter fileWriter = new FileWriter("res/"+levelName+".txt");
 
             BufferedWriter bw = new BufferedWriter(fileWriter);
 
@@ -276,6 +312,10 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
             bw.write(level.height+"");
             bw.newLine();
             bw.write(level.size+"");
+            bw.newLine();
+            bw.write(level.spawnPoint[0]+"");
+            bw.newLine();
+            bw.write(level.spawnPoint[1]+"");
             bw.newLine();
             bw.write(level.color.getRed()+"");
             bw.newLine();
@@ -323,7 +363,8 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 		
 		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
 		g.setColor(Color.WHITE);
-		g.fill(player.playerRect);
+		//g.fill(player.playerRect);
+		g.fillRect(player.px, player.py, drawer.level.size, drawer.level.size*3);
 		
 		uiControl.render(g);
 
