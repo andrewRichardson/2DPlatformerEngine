@@ -21,8 +21,8 @@ public class Drawing {
 	public int playerwidth = 0;
 	public int playerheight = 0;
 	
-	private int brushRadius = 1;
-	private double scrollNumber = 2;
+	public int brushRadius = 1;
+	public double scrollNumber = 2;
 	private double scrollUnits = 2;
 	public boolean brushShape = false;
 	
@@ -30,13 +30,13 @@ public class Drawing {
 	public Color canChangeBlock_Color;
 	
 	public Drawing(int width, int height, int tileSize, Color color, InputHandler inputHandler){
-		level = new Level(width, height, tileSize, color);
+		level = new Level(width, height, tileSize, color, playerheight);
 		this.input = inputHandler;
 		canChangeBlock_Color = Color.ORANGE;
 	}
 	
 	public Drawing(int width, int height, int tileSize, Color color, InputHandler inputHandler, String tileSet){
-		level = new Level(width, height, tileSize, color, tileSet);
+		level = new Level(width, height, tileSize, color, tileSet, playerheight);
 		this.input = inputHandler;
 		canChangeBlock_Color = Color.ORANGE;
 	}
@@ -82,10 +82,10 @@ public class Drawing {
 			}
 			if(breakOrPlace == 2){
 				System.out.println("Placing Spawn Point at "+ x + ", "+ y);
-				level.tileMap.tiles[(level.spawnPoint[0])/level.size][(level.spawnPoint[1]+level.size*2)/level.size] = 0;
+				level.tileMap.tiles[(level.spawnPoint[0])/level.size][(level.spawnPoint[1]+playerheight-1)/level.size] = 0;
 				level.tileMap.tiles[x][y] = 2;
 				level.spawnPoint[0] = x*level.size;
-				level.spawnPoint[1] = y*level.size-level.size*2;
+				level.spawnPoint[1] = y*level.size-level.size;
 			}
 		}
 		
@@ -149,13 +149,14 @@ public class Drawing {
 		int[] tileCoords = level.findTileFromCoordinate(mouseX, mouseY);
 		int x = tileCoords[0];
 		int y = tileCoords[1];
-		
 		//if(mouseIsHovering && blockDistance <= maxDistance || input.shift){
 			if(brushRadius == 1){
+				if(x < level.tileMap.tiles.length && x > -1 && y < level.tileMap.tiles[1].length && y > -1 && blockDistance <= maxDistance){
 					level.tileMap.tiles[x][y] = 0;
 					level.getColliders();
 					level.fillColliders();
 					System.out.println("Breaking block: "+x+", "+y);
+				}
 			} else {
 				changeTiles(x, y, 0);
 				System.out.println("Breaking block: "+x+", "+y+" w/ radius of "+brushRadius+" tiles.");
@@ -170,10 +171,12 @@ public class Drawing {
 		
 		//if(blockDistance <= maxDistance|| input.shift){
 			if(brushRadius == 1){
+				if(x < level.tileMap.tiles.length && x > -1 && y < level.tileMap.tiles[1].length && y > -1 && blockDistance <= maxDistance){
 					level.tileMap.tiles[x][y] = 1;
 					level.getColliders();
 					level.fillColliders();
 					System.out.println("Placing block: "+x+", "+y);
+				}
 			} else {
 				changeTiles(x, y, 1);
 				System.out.println("Placing block: "+x+", "+y+" w/ radius of "+brushRadius+" tiles.");
@@ -209,6 +212,7 @@ public class Drawing {
 			level.getColliders();
 			level.fillColliders();
 		}
+		level.tileMap.checkTileBorders();
 	}
 	
 	public void checkMouseHover(){

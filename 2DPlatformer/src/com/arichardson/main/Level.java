@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Random;
 
 import com.arichardson.main.graphics.TileMap;
 
@@ -18,7 +19,7 @@ public class Level {
 	public boolean[][] coords;
 	public int[] spawnPoint;
 
-	public Level(int w, int h, int s, Color col) {
+	public Level(int w, int h, int s, Color col, int playerHeight) {
 		width = w;
 		height = h;
 		size = s;
@@ -26,14 +27,15 @@ public class Level {
 		tileMap = new TileMap(width, height, size);
 		coords = new boolean[width][height];
 
-		spawnPoint = new int[]{width/2-size/2, height/2-size/2};
-		tileMap.tiles[(int)(spawnPoint[0]/size)][(int)(spawnPoint[1]/size)] = 2;
+		spawnPoint = new int[]{tileMap.tiles.length/2*size, tileMap.tiles[0].length/2*size+playerHeight-size};
+		tileMap.tiles[(int)(spawnPoint[0]/size)][(int)(spawnPoint[1]/size)+1] = 2;
 		
 		getColliders();
 		fillColliders();
+		//tileMap.checkTileBorders();
 	}
 	
-	public Level(int w, int h, int s, Color col, String tileSet) {
+	public Level(int w, int h, int s, Color col, String tileSet, int playerHeight) {
 		width = w;
 		height = h;
 		size = s;
@@ -41,44 +43,44 @@ public class Level {
 		tileMap = new TileMap(width, height, size, tileSet);
 		coords = new boolean[width][height];
 
-		spawnPoint = new int[]{width/2-size/2, height/2-size/2};
-		tileMap.tiles[(int)(spawnPoint[0]/size)][(int)(spawnPoint[1]/size)] = 2;
+		spawnPoint = new int[]{tileMap.tiles.length/2*size, tileMap.tiles[0].length/2*size+playerHeight-size};
+		tileMap.tiles[(int)(spawnPoint[0]/size)][(int)(spawnPoint[1]/size)+1] = 2;
 		
 		getColliders();
 		fillColliders();
+		//tileMap.checkTileBorders();
 	}
 
 	public void drawTileMap(Graphics2D g) {
+		boolean[][] preN, preS, preE, preW;
+		preN = new boolean[tileMap.tiles.length][tileMap.tiles[0].length];
+		preS = new boolean[tileMap.tiles.length][tileMap.tiles[0].length];
+		preE = new boolean[tileMap.tiles.length][tileMap.tiles[0].length];
+		preW = new boolean[tileMap.tiles.length][tileMap.tiles[0].length];
+		for (int i = 0; i < tileMap.tiles.length; i++) {
+			for (int j = 0; j < tileMap.tiles[0].length; j++) {
+				preN[i][j] = tileMap.n[i][j];
+				preS[i][j] = tileMap.s[i][j];
+				preE[i][j] = tileMap.e[i][j];
+				preW[i][j] = tileMap.w[i][j];
+			}
+		}
+		tileMap.checkTileBorders();
 		for (int i = 0; i < tileMap.tiles.length; i++) {
 			for (int j = 0; j < tileMap.tiles[0].length; j++) {
 				if(tileMap.tileSprites != null)
 					g.drawImage(tileMap.tileSprites[22], i * size, j * size, null);
 				if(tileMap.tiles[i][j] == 1){
-					boolean n = false;
-					boolean s = false;
-					boolean e = false;
-					boolean w = false;
+					boolean n = tileMap.n[i][j];
+					boolean s = tileMap.s[i][j];
+					boolean e = tileMap.e[i][j];
+					boolean w = tileMap.w[i][j];
 					if(tileMap.tileSprites == null){
 						g.setColor(color);
 						g.fillRect(i * size, j	* size, size, size);
 					}
-					if(i != 0){
-						if(tileMap.tiles[i-1][j] == 1)
-							w = true;
-					}
-					if(j != 0){
-						if(tileMap.tiles[i][j-1] == 1)
-							n = true;
-					}
-					if(j != tileMap.tiles[0].length-1){
-						if(tileMap.tiles[i][j+1] == 1)
-							s = true;
-					}
-					if(i != tileMap.tiles.length-1){
-						if(tileMap.tiles[i+1][j] == 1)
-							e = true;
-					}
 					if(tileMap.tileSprites != null){
+						Random r = new Random();
 						g.setColor(Color.WHITE);
 						if(n && !s && !e && !w){
 							g.drawImage(tileMap.tileSprites[12], i*size, j*size, null);
@@ -93,13 +95,35 @@ public class Level {
 							g.drawImage(tileMap.tileSprites[11], i*size, j*size, null);
 						}
 						if(n && s && !e && !w){
-							g.drawImage(tileMap.tileSprites[17], i*size, j*size, null);
+							if(preN[i][j] != n || preS[i][j] != s || preE[i][j] != e || preW[i][j] != w){
+								tileMap.sprites[i][j] = r.nextInt(2);
+								System.out.println(tileMap.sprites[i][j] + " NORTH SOUTH TILES");
+							}
+							switch(tileMap.sprites[i][j]){
+							case 0:
+								g.drawImage(tileMap.tileSprites[16], i*size, j*size, null);
+								break;
+							case 1:
+								g.drawImage(tileMap.tileSprites[17], i*size, j*size, null);
+								break;
+							}
 						}
 						if(!n && s && e && !w){
 							g.drawImage(tileMap.tileSprites[13], i*size, j*size, null);
 						}
 						if(!n && !s && e && w){
-							g.drawImage(tileMap.tileSprites[14], i*size, j*size, null);
+							if(preN[i][j] != n || preS[i][j] != s || preE[i][j] != e || preW[i][j] != w){
+								tileMap.sprites[i][j] = r.nextInt(2);
+								System.out.println(tileMap.sprites[i][j] + " EAST WEST TILES");
+							}
+							switch(tileMap.sprites[i][j]){
+							case 0:
+								g.drawImage(tileMap.tileSprites[14], i*size, j*size, null);
+								break;
+							case 1:
+								g.drawImage(tileMap.tileSprites[19], i*size, j*size, null);
+								break;
+							}
 						}
 						if(n && s && e && !w){
 							g.drawImage(tileMap.tileSprites[4], i*size, j*size, null);
@@ -126,7 +150,27 @@ public class Level {
 							g.drawImage(tileMap.tileSprites[21], i*size, j*size, null);
 						}
 						if(n && s && e && w){
-							g.drawImage(tileMap.tileSprites[0], i*size, j*size, null);
+							if(preN[i][j] != n || preS[i][j] != s || preE[i][j] != e || preW[i][j] != w){
+								tileMap.sprites[i][j] = r.nextInt(5);
+								System.out.println(tileMap.sprites[i][j] + " CENTER TILES");
+							}
+							switch(tileMap.sprites[i][j]){
+							case 0:
+								g.drawImage(tileMap.tileSprites[0], i*size, j*size, null);
+								break;
+							case 1:
+								g.drawImage(tileMap.tileSprites[2], i*size, j*size, null);
+								break;
+							case 2:
+								g.drawImage(tileMap.tileSprites[5], i*size, j*size, null);
+								break;
+							case 3:
+								g.drawImage(tileMap.tileSprites[7], i*size, j*size, null);
+								break;
+							case 4:
+								g.drawImage(tileMap.tileSprites[10], i*size, j*size, null);
+								break;
+							}
 						}
 					} else {
 						g.setColor(Color.LIGHT_GRAY);

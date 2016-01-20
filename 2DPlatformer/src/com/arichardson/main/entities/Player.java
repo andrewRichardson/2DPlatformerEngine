@@ -24,12 +24,15 @@ public class Player {
 	private int width, height;
 	private boolean jumped = false;
 	private boolean falling = false;
+	public int pWidth, pHeight;
 	
-	public Player(Level level, InputHandler inputHandler, int gravity, int boundX, int boundY){
+	public Player(Level level, InputHandler inputHandler, int gravity, int boundX, int boundY, int pWidth, int pHeight){
 		this.level = level;
 		input = inputHandler;
 		width = boundX;
 		height = boundY;
+		this.pWidth = pWidth;
+		this.pHeight = pHeight;
 		
 		speedX *= (level.size/8);
 		speedY *= (level.size/8);
@@ -38,13 +41,13 @@ public class Player {
 		px = level.spawnPoint[0];
 		py = level.spawnPoint[1];
 		
-		int[] xPoints = {px, px, px+level.size/2, px+level.size, px+level.size};
-		int[] yPoints = {py, py+level.size*3-level.size, py+level.size*3, py+level.size*3-level.size, py};
+		int[] xPoints = {px, px, px+pWidth/2, px+pWidth, px+pWidth};
+		int[] yPoints = {py, py+pHeight*2/3, py+pHeight, py+pHeight*2/3, py};
 		
 		playerRect = new Polygon(xPoints, yPoints, 5);
 		
-		playerTopCollider = new Rectangle(px-2, py, level.size+4, level.size);
-		playerBottomCollider = new Rectangle(px, py+level.size*2, level.size, level.size-level.size/8);
+		playerTopCollider = new Rectangle(px-2, py, pWidth+4, pHeight/3);
+		playerBottomCollider = new Rectangle(px, py+pHeight*2/3, pWidth, pHeight*1/3-1);
 	}
 	
 	public void update(){
@@ -93,12 +96,12 @@ public class Player {
 		playerTopCollider.x = px-2;
 		playerTopCollider.y = py;
 		playerBottomCollider.x = px;
-		playerBottomCollider.y = py+level.size*2;
+		playerBottomCollider.y = py+pHeight*2/3;
 
-		if (px > width - level.size || px < 0)
+		if (px > width - pWidth || px < 0)
 			px = oldx;
 
-		if (py > height - level.size || py < 0)
+		if (py > height - pHeight || py < 0)
 			py = oldy;
 		
 		boolean colliderFlag = false;
@@ -126,7 +129,7 @@ public class Player {
 		playerTopCollider.x = px-2;
 		playerTopCollider.y = py;
 		playerBottomCollider.x = px;
-		playerBottomCollider.y = py+level.size*2;
+		playerBottomCollider.y = py+pHeight*2/3;
 
 		for (int i = 0; i < level.colliders.length; i++) {
 			if (playerRect.intersects(level.colliders[i])) {
@@ -142,7 +145,7 @@ public class Player {
 		playerTopCollider.x = px-2;
 		playerTopCollider.y = py;
 		playerBottomCollider.x = px;
-		playerBottomCollider.y = py+level.size*2;
+		playerBottomCollider.y = py+pHeight*2/3;
 		
 		for (int i = 0; i < level.colliders.length; i++) {
 			if (playerRect.intersects(level.colliders[i])) {
@@ -157,10 +160,17 @@ public class Player {
 		playerTopCollider.x = px-2;
 		playerTopCollider.y = py;
 		playerBottomCollider.x = px;
-		playerBottomCollider.y = py+level.size*2;
+		playerBottomCollider.y = py+pHeight*2/3;
+	}
+	
+	public void stopMovement() {
+		velX = 0;
+		velY = 0;
 	}
 	
 	public void resetPlayer() {
+		playerRect.translate(-playerRect.getBounds().x, -playerRect.getBounds().y);
+		playerRect.translate(level.spawnPoint[0], level.spawnPoint[1]);
 		px = level.spawnPoint[0];
 		py = level.spawnPoint[1];
 	}

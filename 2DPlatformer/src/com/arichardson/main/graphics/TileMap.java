@@ -14,6 +14,9 @@ import com.arichardson.main.math.GenerateWalls;
 public class TileMap {
 
 	public int[][] tiles;
+	public int[][] sprites;
+	public boolean[][] n, s, e, w;
+	private int width, height;
 	
 	public int size;
 	private String fileName;
@@ -22,7 +25,15 @@ public class TileMap {
 	public TileMap(int width, int height, int s) {
 		size = s;
 
+		this.width = width;
+		this.height = height;
+		
 		tiles = new int[width / size][height / size];
+		w = new boolean[width / size][height / size];
+		this.s = new boolean[width / size][height / size];
+		e = new boolean[width / size][height / size];
+		n = new boolean[width / size][height / size];
+		sprites = new int[width / size][height / size];
 		
 		GenerateWalls wallGen = new GenerateWalls(tiles.length,  tiles[0].length, 47, 5, 4);
 		
@@ -39,7 +50,16 @@ public class TileMap {
 		fileName = filePath;
 		tileSprites = new Image[23];
 
+
+		this.width = width;
+		this.height = height;
+		
 		tiles = new int[width / size][height / size];
+		w = new boolean[width / size][height / size];
+		this.s = new boolean[width / size][height / size];
+		e = new boolean[width / size][height / size];
+		n = new boolean[width / size][height / size];
+		sprites = new int[width / size][height / size];
 		
 		GenerateWalls wallGen = new GenerateWalls(tiles.length,  tiles[0].length, 47, 5, 4);
 		
@@ -58,7 +78,6 @@ public class TileMap {
 			File file = new File(fileName);
 			wholeTileSheet = ImageIO.read(file);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -88,6 +107,34 @@ public class TileMap {
 			tileSprites[20] = wholeTileSheet.getSubimage(2*actualSize, 5*actualSize, actualSize, actualSize).getScaledInstance(size, size, BufferedImage.TYPE_INT_ARGB);
 			tileSprites[21] = wholeTileSheet.getSubimage(3*actualSize, 3*actualSize, actualSize, actualSize).getScaledInstance(size, size, BufferedImage.TYPE_INT_ARGB);
 			tileSprites[22] = wholeTileSheet.getSubimage(4*actualSize, 3*actualSize, actualSize, actualSize).getScaledInstance(size, size, BufferedImage.TYPE_INT_ARGB);
+		}
+	}
+	
+	public void checkTileBorders(){
+
+		w = new boolean[width / size][height / size];
+		s = new boolean[width / size][height / size];
+		e = new boolean[width / size][height / size];
+		n = new boolean[width / size][height / size];
+		for (int i = 0; i < tiles.length; i++) {
+			for (int j = 0; j < tiles[0].length; j++) {
+				if(i != 0){
+					if(tiles[i-1][j] == 1)
+						w[i][j] = true;
+				}
+				if(j != 0){
+					if(tiles[i][j-1] == 1)
+						n[i][j] = true;
+				}
+				if(j != tiles[0].length-1){
+					if(tiles[i][j+1] == 1)
+						s[i][j] = true;
+				}
+				if(i != tiles.length-1){
+					if(tiles[i+1][j] == 1)
+						e[i][j] = true;
+				}
+			}
 		}
 	}
 

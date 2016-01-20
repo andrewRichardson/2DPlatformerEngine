@@ -89,6 +89,11 @@ public class UIController {
 				int textHeight = (int)g.getFont().createGlyphVector(g.getFontMetrics().getFontRenderContext(), ((UILabel)uiComp).text).getVisualBounds().getHeight();
 				g.drawString(((UILabel)uiComp).text, uiComp.x+uiComp.width/2-textWidth/2+xOffset, uiComp.y+uiComp.height/2+textHeight/2+yOffset);
 			}
+			if(uiComp.getClass() == UISlider.class){
+				UISlider slider = (UISlider)uiComp;
+				g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (uiComp.alpha * 1.5f <= 1f)?uiComp.alpha * 1.5f : 1f));
+				g.fillRect(uiComp.x+xOffset+uiMenu.paddingX+(int)(slider.value*(uiComp.width-uiMenu.paddingX*2-(uiComp.height-uiMenu.paddingX*2))), uiComp.y+uiMenu.paddingX+yOffset, uiComp.height-uiMenu.paddingX*2, uiComp.height-uiMenu.paddingX*2);
+			}
 		}
 	}
 	
