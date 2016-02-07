@@ -8,7 +8,7 @@ Written from scratch using Java
 > - Complex UI/Menu
 > - Entity Physics
 > - Level Editor w/ Dynamic Spritesheets
-> ...more...
+> - ...more...
 
 
 > Planned:
@@ -17,7 +17,7 @@ Written from scratch using Java
 > - Stronger API
 > - Full Featured editor
 > - Multi-threading
-> ...more...
+> - ...more...
 
 
 
