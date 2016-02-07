@@ -1,12 +1,11 @@
 package com.arichardson.main;
 
-import java.awt.AlphaComposite;
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Random;
 
+import com.arichardson.main.api.Graphics;
 import com.arichardson.main.graphics.TileMap;
 
 public class Level {
@@ -51,7 +50,7 @@ public class Level {
 		//tileMap.checkTileBorders();
 	}
 
-	public void drawTileMap(Graphics2D g) {
+	public void drawTileMap(Graphics g) {
 		boolean[][] preN, preS, preE, preW;
 		preN = new boolean[tileMap.tiles.length][tileMap.tiles[0].length];
 		preS = new boolean[tileMap.tiles.length][tileMap.tiles[0].length];
@@ -69,180 +68,170 @@ public class Level {
 		for (int i = 0; i < tileMap.tiles.length; i++) {
 			for (int j = 0; j < tileMap.tiles[0].length; j++) {
 				if(tileMap.tileSprites != null)
-					g.drawImage(tileMap.tileSprites[22], i * size, j * size, null);
+					g.drawImage(tileMap.tileSprites[22], i * size, j * size);
 				if(tileMap.tiles[i][j] == 1){
 					boolean n = tileMap.n[i][j];
 					boolean s = tileMap.s[i][j];
 					boolean e = tileMap.e[i][j];
 					boolean w = tileMap.w[i][j];
 					if(tileMap.tileSprites == null){
-						g.setColor(color);
-						g.fillRect(i * size, j	* size, size, size);
+						g.drawRect(i * size, j	* size, size, size, true, color);
 					}
 					if(tileMap.tileSprites != null){
 						Random r = new Random();
-						g.setColor(Color.WHITE);
 						if(n && !s && !e && !w){
-							g.drawImage(tileMap.tileSprites[12], i*size, j*size, null);
+							g.drawImage(tileMap.tileSprites[12], i*size, j*size);
 						}
 						if(!n && s && !e && !w){
-							g.drawImage(tileMap.tileSprites[8], i*size, j*size, null);
+							g.drawImage(tileMap.tileSprites[8], i*size, j*size);
 						}
 						if(!n && !s && e && !w){
-							g.drawImage(tileMap.tileSprites[9], i*size, j*size, null);
+							g.drawImage(tileMap.tileSprites[9], i*size, j*size);
 						}
 						if(!n && !s && !e && w){
-							g.drawImage(tileMap.tileSprites[11], i*size, j*size, null);
+							g.drawImage(tileMap.tileSprites[11], i*size, j*size);
 						}
 						if(n && s && !e && !w){
 							if(preN[i][j] != n || preS[i][j] != s || preE[i][j] != e || preW[i][j] != w){
 								tileMap.sprites[i][j] = r.nextInt(2);
-								System.out.println(tileMap.sprites[i][j] + " NORTH SOUTH TILES");
 							}
 							switch(tileMap.sprites[i][j]){
 							case 0:
-								g.drawImage(tileMap.tileSprites[16], i*size, j*size, null);
+								g.drawImage(tileMap.tileSprites[16], i*size, j*size);
 								break;
 							case 1:
-								g.drawImage(tileMap.tileSprites[17], i*size, j*size, null);
+								g.drawImage(tileMap.tileSprites[17], i*size, j*size);
 								break;
 							}
 						}
 						if(!n && s && e && !w){
-							g.drawImage(tileMap.tileSprites[13], i*size, j*size, null);
+							g.drawImage(tileMap.tileSprites[13], i*size, j*size);
 						}
 						if(!n && !s && e && w){
 							if(preN[i][j] != n || preS[i][j] != s || preE[i][j] != e || preW[i][j] != w){
 								tileMap.sprites[i][j] = r.nextInt(2);
-								System.out.println(tileMap.sprites[i][j] + " EAST WEST TILES");
 							}
 							switch(tileMap.sprites[i][j]){
 							case 0:
-								g.drawImage(tileMap.tileSprites[14], i*size, j*size, null);
+								g.drawImage(tileMap.tileSprites[14], i*size, j*size);
 								break;
 							case 1:
-								g.drawImage(tileMap.tileSprites[19], i*size, j*size, null);
+								g.drawImage(tileMap.tileSprites[19], i*size, j*size);
 								break;
 							}
 						}
 						if(n && s && e && !w){
-							g.drawImage(tileMap.tileSprites[4], i*size, j*size, null);
+							g.drawImage(tileMap.tileSprites[4], i*size, j*size);
 						}
 						if(!n && s && e && w){
-							g.drawImage(tileMap.tileSprites[6], i*size, j*size, null);
+							g.drawImage(tileMap.tileSprites[6], i*size, j*size);
 						}
 						if(n && !s && e && w){
-							g.drawImage(tileMap.tileSprites[1], i*size, j*size, null);
+							g.drawImage(tileMap.tileSprites[1], i*size, j*size);
 						}
 						if(n && s && !e && w){
-							g.drawImage(tileMap.tileSprites[3], i*size, j*size, null);
+							g.drawImage(tileMap.tileSprites[3], i*size, j*size);
 						}
 						if(n && !s && e && !w){
-							g.drawImage(tileMap.tileSprites[18], i*size, j*size, null);
+							g.drawImage(tileMap.tileSprites[18], i*size, j*size);
 						}
 						if(!n && s && !e && w){
-							g.drawImage(tileMap.tileSprites[15], i*size, j*size, null);
+							g.drawImage(tileMap.tileSprites[15], i*size, j*size);
 						}
 						if(n && !s && !e && w){
-							g.drawImage(tileMap.tileSprites[20], i*size, j*size, null);
+							g.drawImage(tileMap.tileSprites[20], i*size, j*size);
 						}
 						if(!n && !s && !e && !w){
-							g.drawImage(tileMap.tileSprites[21], i*size, j*size, null);
+							g.drawImage(tileMap.tileSprites[21], i*size, j*size);
 						}
 						if(n && s && e && w){
 							if(preN[i][j] != n || preS[i][j] != s || preE[i][j] != e || preW[i][j] != w){
 								tileMap.sprites[i][j] = r.nextInt(5);
-								System.out.println(tileMap.sprites[i][j] + " CENTER TILES");
 							}
 							switch(tileMap.sprites[i][j]){
 							case 0:
-								g.drawImage(tileMap.tileSprites[0], i*size, j*size, null);
+								g.drawImage(tileMap.tileSprites[0], i*size, j*size);
 								break;
 							case 1:
-								g.drawImage(tileMap.tileSprites[2], i*size, j*size, null);
+								g.drawImage(tileMap.tileSprites[2], i*size, j*size);
 								break;
 							case 2:
-								g.drawImage(tileMap.tileSprites[5], i*size, j*size, null);
+								g.drawImage(tileMap.tileSprites[5], i*size, j*size);
 								break;
 							case 3:
-								g.drawImage(tileMap.tileSprites[7], i*size, j*size, null);
+								g.drawImage(tileMap.tileSprites[7], i*size, j*size);
 								break;
 							case 4:
-								g.drawImage(tileMap.tileSprites[10], i*size, j*size, null);
+								g.drawImage(tileMap.tileSprites[10], i*size, j*size);
 								break;
 							}
 						}
 					} else {
-						g.setColor(Color.LIGHT_GRAY);
 						if(n && !s && !e && !w){
-							g.drawLine(i*size, j*size, i*size, (j+1)*size);//west
-							g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size);//south
-							g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size);//east
+							g.drawLine(i*size, j*size, i*size, (j+1)*size, Color.LIGHT_GRAY);//west
+							g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size, Color.LIGHT_GRAY);//south
+							g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size, Color.LIGHT_GRAY);//east
 						}
 						if(!n && s && !e && !w){
-							g.drawLine(i*size, j*size, (i+1)*size, j*size);
-							g.drawLine(i*size, j*size, i*size, (j+1)*size);
-							g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size);
+							g.drawLine(i*size, j*size, (i+1)*size, j*size, Color.LIGHT_GRAY);
+							g.drawLine(i*size, j*size, i*size, (j+1)*size, Color.LIGHT_GRAY);
+							g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size, Color.LIGHT_GRAY);
 						}
 						if(!n && !s && e && !w){
-							g.drawLine(i*size, j*size, (i+1)*size, j*size);
-							g.drawLine(i*size, j*size, i*size, (j+1)*size);
-							g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size);
+							g.drawLine(i*size, j*size, (i+1)*size, j*size, Color.LIGHT_GRAY);
+							g.drawLine(i*size, j*size, i*size, (j+1)*size, Color.LIGHT_GRAY);
+							g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size, Color.LIGHT_GRAY);
 						}
 						if(!n && !s && !e && w){
-							g.drawLine(i*size, j*size, (i+1)*size, j*size);
-							g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size);
-							g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size);
+							g.drawLine(i*size, j*size, (i+1)*size, j*size, Color.LIGHT_GRAY);
+							g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size, Color.LIGHT_GRAY);
+							g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size, Color.LIGHT_GRAY);
 						}
 						if(n && s && !e && !w){
-							g.drawLine(i*size, j*size, i*size, (j+1)*size);
-							g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size);
+							g.drawLine(i*size, j*size, i*size, (j+1)*size, Color.LIGHT_GRAY);
+							g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size, Color.LIGHT_GRAY);
 						}
 						if(!n && s && e && !w){
-							g.drawLine(i*size, j*size, (i+1)*size, j*size);//north
-							g.drawLine(i*size, j*size, i*size, (j+1)*size);//west
+							g.drawLine(i*size, j*size, (i+1)*size, j*size, Color.LIGHT_GRAY);//north
+							g.drawLine(i*size, j*size, i*size, (j+1)*size, Color.LIGHT_GRAY);//west
 						}
 						if(!n && !s && e && w){
-							g.drawLine(i*size, j*size, (i+1)*size, j*size);//north
-							g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size);//south
+							g.drawLine(i*size, j*size, (i+1)*size, j*size, Color.LIGHT_GRAY);//north
+							g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size, Color.LIGHT_GRAY);//south
 						}
 						if(n && s && e && !w){
-							g.drawLine(i*size, j*size, i*size, (j+1)*size);//west
+							g.drawLine(i*size, j*size, i*size, (j+1)*size, Color.LIGHT_GRAY);//west
 						}
 						if(!n && s && e && w){
-							g.drawLine(i*size, j*size, (i+1)*size, j*size);//north
+							g.drawLine(i*size, j*size, (i+1)*size, j*size, Color.LIGHT_GRAY);//north
 						}
 						if(n && !s && e && w){
-							g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size);//south
+							g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size, Color.LIGHT_GRAY);//south
 						}
 						if(n && s && !e && w){
-							g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size);//east
+							g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size, Color.LIGHT_GRAY);//east
 						}
 						if(n && !s && e && !w){
-							g.drawLine(i*size, j*size, i*size, (j+1)*size);//west
-							g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size);//south
+							g.drawLine(i*size, j*size, i*size, (j+1)*size, Color.LIGHT_GRAY);//west
+							g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size, Color.LIGHT_GRAY);//south
 						}
 						if(!n && s && !e && w){
-							g.drawLine(i*size, j*size, (i+1)*size, j*size);//north
-							g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size);//east
+							g.drawLine(i*size, j*size, (i+1)*size, j*size, Color.LIGHT_GRAY);//north
+							g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size, Color.LIGHT_GRAY);//east
 						}
 						if(n && !s && !e && w){
-							g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size);//south
-							g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size);//east
+							g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size, Color.LIGHT_GRAY);//south
+							g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size, Color.LIGHT_GRAY);//east
 						}
 						if(!n && !s && !e && !w){
-							g.drawLine(i*size, j*size, (i+1)*size, j*size);//north
-							g.drawLine(i*size, j*size, i*size, (j+1)*size);//west
-							g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size);//south
-							g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size);//east
+							g.drawLine(i*size, j*size, (i+1)*size, j*size, Color.LIGHT_GRAY);//north
+							g.drawLine(i*size, j*size, i*size, (j+1)*size, Color.LIGHT_GRAY);//west
+							g.drawLine(i*size, (j+1)*size, (i+1)*size, (j+1)*size, Color.LIGHT_GRAY);//south
+							g.drawLine((i+1)*size, (j+1)*size, (i+1)*size, j*size, Color.LIGHT_GRAY);//east
 						}
 					}
 				} else if(tileMap.tiles[i][j] == 2){
-					g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
-					g.setColor(Color.WHITE);
-					g.fillOval(i*size, j*size, size, size);
-
-					g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
+					g.drawEllipse(i*size, j*size, size, size, true, Color.WHITE, 0.5f);
 				}
 			}
 		}

@@ -1,9 +1,11 @@
 package com.arichardson.main.entities;
 
+import java.awt.Color;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 
 import com.arichardson.main.Level;
+import com.arichardson.main.api.Graphics;
 import com.arichardson.main.input.InputHandler;
 
 public class Player {
@@ -161,6 +163,10 @@ public class Player {
 		playerTopCollider.y = py;
 		playerBottomCollider.x = px;
 		playerBottomCollider.y = py+pHeight*2/3;
+	}
+	
+	public void render(Graphics graphics){
+		graphics.drawRect(px, py, pWidth, pHeight, true, Color.WHITE);
 	}
 	
 	public void stopMovement() {

@@ -5,21 +5,20 @@ Written from scratch using Java
 > Includes:
 --------
 > - 2D Tile Based System
+> - Cave Generation System
 > - Complex UI/Menu
 > - Entity Physics
 > - Level Editor w/ Dynamic Spritesheets
+> - External API
 > - ...more...
 
 
 > Planned:
 --------
 > - AI navigation
-> - Stronger API
 > - Full Featured editor
 > - Multi-threading
 > - ...more...
-
-
 
 
 

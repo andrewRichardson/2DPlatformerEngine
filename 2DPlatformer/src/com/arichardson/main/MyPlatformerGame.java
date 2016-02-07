@@ -1,16 +1,8 @@
 package com.arichardson.main;
 
-import java.awt.AlphaComposite;
-import java.awt.Canvas;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
-import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -20,13 +12,11 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import javax.imageio.ImageIO;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import com.arichardson.main.api.Graphics;
 import com.arichardson.main.entities.Player;
 import com.arichardson.main.graphics.Drawing;
-import com.arichardson.main.graphics.Lighting;
 import com.arichardson.main.graphics.ui.UIComponent;
 import com.arichardson.main.graphics.ui.UIController;
 import com.arichardson.main.graphics.ui.UILabel;
@@ -34,82 +24,56 @@ import com.arichardson.main.graphics.ui.UIMenu;
 import com.arichardson.main.graphics.ui.UISlider;
 import com.arichardson.main.input.InputHandler;
 
-public class Game extends Canvas implements Runnable, MouseMotionListener {
+public class MyPlatformerGame {
 	
-	private static final long serialVersionUID = 1L;
-
-	private int width = 1280;
-	private int height = 720;
-
-	private boolean running = false;
-
-	private Thread thread;
-
-	private JFrame frame;
-
-	@SuppressWarnings("unused")
-	private int ups = 0;
-	private int fps = 0;
+	private static int width = 1280;
+	private static int height = 720;
+	private int mouseX;
+	private int mouseY;
+	private boolean paused = false;
+	private static GameInit init;	
+	
 	
 	private int tileSize = 20;
 	private int brushMaxRadius = 25;
-	
-	private int mouseX;
-	private int mouseY;
 	private int PM_OffsetX, PM_OffsetY;
 
-	private boolean paused = false;
 	private boolean movePlayer = false;
 	private boolean movingPlayer = false;
 	
-	private static String title = "2D Platformer Engine - Level Editor";
-	private boolean showFPS = false;
+	private String tileSet = "res/underground-tileSet.png";
 
-	private InputHandler input;
+	private Graphics graphics;
+	private static InputHandler input;
 	private Drawing drawer;
 	private Player player;
-	private Lighting lighting;
 	private UIController uiControl;
+	private UIComponent[] brushMenuComponents;
+	private UIComponent brushButton;
+	private UIMenu brushMenu;
+	private UIComponent[] fileMenuComponents;
+	private UIComponent fileButton;
+	private UIMenu fileMenu;
+	private UIComponent[] mainMenuComponents;
+	private UIMenu mainMenu;
 	
 	private Image moveSprite;
 	
-	UIComponent[] brushMenuComponents;
-	UIComponent brushButton;
-	UIMenu brushMenu;
-	UIComponent[] fileMenuComponents;
-	UIComponent fileButton;
-	UIMenu fileMenu;
-	UIComponent[] mainMenuComponents;
-	UIMenu mainMenu;
-	
-	private String tileSet = "res/underground-tileSet.png";
-
-	public Game() {
-		Dimension size = new Dimension(width, height);
-		setPreferredSize(size);
-
-		frame = new JFrame(title);
+	public MyPlatformerGame() {		
+		graphics = new Graphics(init, width, height);
 		input = new InputHandler();
-
-		addKeyListener(input);
-		addMouseListener(input);
-		addMouseWheelListener(input);
-		addMouseMotionListener(this);
 		
-		BufferedImage wholeTileSheet = null;
-		try {
-			File file = new File("res/tool-spriteSheet.png");
-			wholeTileSheet = ImageIO.read(file);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		init.addKeyListener(input);
+		init.addMouseListener(input);
+		init.addMouseWheelListener(input);
+		
+		BufferedImage wholeTileSheet = graphics.loadImage("res/tool-spriteSheet.png");
 		moveSprite = wholeTileSheet.getSubimage(0, 0, wholeTileSheet.getWidth()/5, wholeTileSheet.getHeight()/5).getScaledInstance(wholeTileSheet.getWidth()/5, wholeTileSheet.getHeight()/5, BufferedImage.TYPE_INT_ARGB);
 
 		drawer = new Drawing(width, height, tileSize, Color.GRAY, input, tileSet);
 		player = new Player(drawer.level, input, 1, width, height, tileSize, tileSize*2);
 		drawer.playerwidth = player.playerRect.getBounds().width;
 		drawer.playerheight = player.playerRect.getBounds().height;
-		lighting = new Lighting(drawer.level, player, width, height);
 		uiControl = new UIController(width, height, input);
 		brushMenuComponents = new UIComponent[]{new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "DESTROY BLOCK"), 
 				new UILabel(0, 0, 150, 50, false, Color.LIGHT_GRAY, Color.WHITE, 0.8f, "PLACE BLOCK"), 
@@ -142,76 +106,21 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 		};
 		mainMenu = new UIMenu(10, 10, UIMenu.HORZ_LAYOUT, mainMenuComponents, new int[]{5, 5, 600, 60}, false, true, Color.BLACK, true);
 		uiControl.addMenu(mainMenu);
-	}
-
-	public static void main(String[] args) {
-		System.setProperty("sun.java2d.opengl", "true");
 		
-		Game game = new Game();
-		game.frame.setResizable(false);
-		game.frame.add(game);
-		game.frame.pack();
-		game.frame.setLocationRelativeTo(null);
-		game.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		game.frame.toFront();
-		game.frame.setState(JFrame.NORMAL);
-		game.frame.requestFocus();
-
-		game.frame.setVisible(true);
-		game.start();
-
+		render();
 	}
-
-	public synchronized void start() {
-		running = true;
-
-		thread = new Thread(this, "Game Thread");
-		thread.start();
+	
+	public static void main(String[] args) {
+		init = new GameInit("2D Platformer Engine - Level Editor", width, height);
+		init.main();
+		@SuppressWarnings("unused")
+		MyPlatformerGame game = new MyPlatformerGame();
 	}
-
-	public synchronized void stop() {
-		try {
-			thread.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void run() {
-		long oldTime = System.nanoTime();
-		long timer = System.currentTimeMillis();
-
-		double ns = 1000000000.0 / 60.0;
-		long newTime;
-		double delta = 0;
-
-		while (running) {
-			newTime = System.nanoTime();
-			delta += (double) (newTime - oldTime) / ns;
-			oldTime = newTime;
-			if (delta >= 1) {
-				update();
-				delta--;
-				ups++;
-			}
-			render();
-			fps++;
-			
-			if (System.currentTimeMillis() - timer > 1000) {
-				timer += 1000;
-				if(showFPS)
-					frame.setTitle(title + " | " + fps + " fps");
-				else
-					frame.setTitle(title);
-				//System.out.println(ups + " ups, " + fps + " fps");
-				fps = 0;
-				ups = 0;
-			}
-		}
-		stop();
-	}
-
-	private void update() {
+	
+	public void update(){
+		mouseX = init.getMouseX();
+		mouseY = init.getMouseY();
+		
 		input.update();
 
 		if (!paused) {
@@ -253,6 +162,40 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 				movingPlayer = false;
 			}
 			handleUI();
+		}
+	}
+	
+	public void render(){
+		int updates = 0;
+		while(true){
+			boolean flag = false;
+			if(init.render){
+				flag = graphics.startRender();
+				
+				if(!flag){
+					if(init.ups > updates){
+						updates++;
+						update();
+					}
+					if(init.ups < updates){
+						updates = 0;
+					}
+					drawer.render(graphics);
+					
+					player.render(graphics);
+					
+					if(movePlayer){
+						graphics.drawImage(moveSprite, mouseX-15, mouseY-15);
+					}
+					
+					graphics.drawUI(uiControl);
+	
+					if (paused) {
+					}
+	
+					graphics.finishRender();
+				}
+			}
 		}
 	}
 	
@@ -314,13 +257,13 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 			input.ctrl ^= true;
 		}
 		else if(fileMenuComponents[1].clicked){
-			String file = JOptionPane.showInputDialog(frame, "Type the name of the level (w/o extension)", "Open Level", JOptionPane.QUESTION_MESSAGE);
+			String file = JOptionPane.showInputDialog(init.frame, "Type the name of the level (w/o extension)", "Open Level", JOptionPane.QUESTION_MESSAGE);
 			if(file != null)
 				retrieveLevel(file);
 			input.mouse[MouseEvent.BUTTON1] = false;
 		}
 		else if(fileMenuComponents[0].clicked){
-			String file = JOptionPane.showInputDialog(frame, "Type the name of the new level (w/o extension)", "Save Level", JOptionPane.QUESTION_MESSAGE);
+			String file = JOptionPane.showInputDialog(init.frame, "Type the name of the new level (w/o extension)", "Save Level", JOptionPane.QUESTION_MESSAGE);
 			if(file != null)
 				saveLevel(file, drawer.level);
 			input.mouse[MouseEvent.BUTTON1] = false;
@@ -333,7 +276,7 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 		
 		if(clicked){
 			try {
-				thread.sleep(100);
+				init.thread.sleep(100);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 				clicked = true;
@@ -348,6 +291,9 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 			comp.clicked = false;
 	}
 	
+	// --------------
+	// TODO: Create API for handling level data, remove from client class
+	// --------------
 	private void retrieveLevel(String levelName){
 		int width = 0;
 		int height = 0;
@@ -405,7 +351,7 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
 			player = new Player(drawer.level, input, 1, width, height, tileSize, tileSize*2);
 		}
 		else
-			JOptionPane.showMessageDialog(frame, "Level does not exist.", "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(init.frame, "Level does not exist.", "Error", JOptionPane.ERROR_MESSAGE);
 		
 		input.mouse[MouseEvent.BUTTON1] = false;
 	}
@@ -449,62 +395,6 @@ public class Game extends Canvas implements Runnable, MouseMotionListener {
                 + levelName + "'");
         }
 		input.mouse[MouseEvent.BUTTON1] = false;
-	}
-
-	private void render() {
-		BufferStrategy bs = getBufferStrategy();
-		if (bs == null) {
-			createBufferStrategy(3);
-			return;
-		}
-
-		Graphics2D g = (Graphics2D) bs.getDrawGraphics();
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);
-
-		g.setColor(Color.BLACK);
-		g.fillRect(0, 0, width, height);
-		
-		//lightScene(g);
-
-		//renderLight(g);
-		
-		drawer.render(g);
-		
-		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
-		g.setColor(Color.WHITE);
-		//g.fill(player.playerRect);
-		g.fillRect(player.px, player.py, player.pWidth, player.pHeight);
-		
-		if(movePlayer){
-			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER));
-			g.drawImage(moveSprite, mouseX-15, mouseY-15, null);
-		}
-		
-		uiControl.render(g);
-
-		int fontSize = width / 16;
-
-		g.setFont(new Font("HELVETICA", Font.BOLD, fontSize));
-		g.setColor(Color.WHITE);
-
-		if (paused) {
-		}
-
-		g.dispose();
-		bs.show();
-	}
-	
-	public void mouseDragged(MouseEvent e){
-		lighting.lightX = e.getX();
-		lighting.lightY = e.getY();
-		mouseX = e.getX();
-		mouseY = e.getY();
-	}
-
-	public void mouseMoved(MouseEvent e) {
-		mouseX = e.getX();
-		mouseY = e.getY();
 	}
 
 }

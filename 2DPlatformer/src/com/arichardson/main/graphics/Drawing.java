@@ -1,11 +1,10 @@
 package com.arichardson.main.graphics;
 
-import java.awt.AlphaComposite;
 import java.awt.Color;
-import java.awt.Graphics2D;
 
 import com.arichardson.main.Level;
 import com.arichardson.main.input.InputHandler;
+import com.arichardson.main.api.Graphics;
 
 public class Drawing {
 	
@@ -96,47 +95,40 @@ public class Drawing {
 		breakOrPlace = i;
 	}
 	
-	public void render(Graphics2D g){
-		level.drawTileMap(g);
+	public void render(Graphics graphics){
+		level.drawTileMap(graphics);
 		
-		//if(mouseIsHovering){
-			int x = (int)(mouseX/level.size);
-			int y = (int)(mouseY/level.size);
-			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
-			if(brushShape && breakOrPlace != 2){
-				for(int xx = -(brushRadius-1); xx < brushRadius; xx++){
-					for(int yy = -(brushRadius-1); yy < brushRadius; yy++){
-						if(x+xx < level.tileMap.tiles.length && x+xx > -1 && y+yy < level.tileMap.tiles[1].length && y+yy > -1){
-							updateBlockDistance(xx*level.size, yy*level.size);
-							if(blockDistance <= maxDistance || input.shift)
-								g.setColor(canChangeBlock_Color);
-							else
-								g.setColor(Color.RED);
-							//if(xx < -(brushRadius-2) || xx > brushRadius-2 || yy < -(brushRadius-2) || yy > brushRadius-2)
-								g.fillRect((x+xx)*level.size, (y+yy)*level.size, level.size, level.size);
-						}
+		int x = (int)(mouseX/level.size);
+		int y = (int)(mouseY/level.size);
+		if(brushShape && breakOrPlace != 2){
+			for(int xx = -(brushRadius-1); xx < brushRadius; xx++){
+				for(int yy = -(brushRadius-1); yy < brushRadius; yy++){
+					if(x+xx < level.tileMap.tiles.length && x+xx > -1 && y+yy < level.tileMap.tiles[1].length && y+yy > -1){
+						updateBlockDistance(xx*level.size, yy*level.size);
+						if(blockDistance <= maxDistance || input.shift)
+							graphics.drawRect((x+xx)*level.size, (y+yy)*level.size, level.size, level.size, true, canChangeBlock_Color, 0.5f);
+						else
+							graphics.drawRect((x+xx)*level.size, (y+yy)*level.size, level.size, level.size, true, Color.RED, 0.5f);
 					}
 				}
-			} else if(!brushShape && breakOrPlace != 2){
-				for(int xx = -(brushRadius-1); xx < brushRadius; xx++){
-					for(int yy = -(brushRadius-1); yy < brushRadius; yy++){
-						if(x+xx < level.tileMap.tiles.length && x+xx > -1 && y+yy < level.tileMap.tiles[1].length && y+yy > -1){
-							updateBlockDistance(xx*level.size, yy*level.size);
-							if(blockDistance <= maxDistance || input.shift)
-								g.setColor(canChangeBlock_Color);
-							else
-								g.setColor(Color.RED);
-							if(xx*xx + yy*yy <= brushRadius*brushRadius)
-								g.fillRect((x+xx)*level.size, (y+yy)*level.size, level.size, level.size);
-						}
-					}
-				}
-			} else if(breakOrPlace == 2){
-				g.setColor(Color.WHITE);
-				g.fillRect(x*level.size, y*level.size, level.size, level.size);
 			}
-		//}
-		g.setColor(Color.WHITE);
+		} else if(!brushShape && breakOrPlace != 2){
+			for(int xx = -(brushRadius-1); xx < brushRadius; xx++){
+				for(int yy = -(brushRadius-1); yy < brushRadius; yy++){
+					if(x+xx < level.tileMap.tiles.length && x+xx > -1 && y+yy < level.tileMap.tiles[1].length && y+yy > -1){
+						updateBlockDistance(xx*level.size, yy*level.size);
+						if(xx*xx + yy*yy <= brushRadius*brushRadius){
+							if(blockDistance <= maxDistance || input.shift)
+								graphics.drawRect((x+xx)*level.size, (y+yy)*level.size, level.size, level.size, true, canChangeBlock_Color, 0.5f);
+							else
+								graphics.drawRect((x+xx)*level.size, (y+yy)*level.size, level.size, level.size, true, Color.RED, 0.5f);
+						}
+					}
+				}
+			}
+		} else if(breakOrPlace == 2){
+			graphics.drawRect(x*level.size, y*level.size, level.size, level.size, true, Color.WHITE);
+		}
 	}
 	
 	public void updateBlockDistance(int xOffset, int yOffset){
